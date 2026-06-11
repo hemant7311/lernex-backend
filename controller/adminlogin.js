@@ -1,98 +1,119 @@
-const User = require('../model/admin');
+const User = require("../model/admin");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
-// SIGNUP
+// ================= SIGNUP =================
 exports.adminsignup = async (req, res) => {
-    try {
-        const { adname, ademail, adpassword } = req.body;
+try {
+const { adname, ademail, adpassword } = req.body;
 
-        // ✅ check existing user
-        const existing = await User.findOne({ ademail });
-        if (existing) {
-            return res.status(400).json({
-                message: "Email already exists ❌"
-            });
-        }
+```
+const existing = await User.findOne({ ademail });
 
-        // ✅ hash password
-        const hashedPassword = await bcrypt.hash(adpassword, 10);
+if (existing) {
+  return res.status(400).json({
+    success: false,
+    message: "Email already exists ❌",
+  });
+}
 
-        const user = await User.create({
-            adname,
-            ademail,
-            adpassword: hashedPassword
-        });
+const hashedPassword = await bcrypt.hash(adpassword, 10);
 
-        const token = jwt.sign(
-            {
-                id: user._id,
-                name: user.adname,
-                email: user.ademail
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: process.env.JWT_EXPIRE }
-        );
+const user = await User.create({
+  adname,
+  ademail,
+  adpassword: hashedPassword,
+});
 
-        res.status(201).json({
-            message: "User registered successfully ✅",
-            success: true,
-            token
-        });
+const token = jwt.sign(
+  {
+    id: user._id,
+    name: user.adname,
+    email: user.ademail,
+  },
+  process.env.JWT_SECRET,
+  {
+    expiresIn: process.env.JWT_EXPIRE || "7d",
+  }
+);
 
-    } catch (err) {
-        res.status(500).json({
-            message: "Registration failed",
-            success: false,
-            error: err.message
-        });
-    }
+return res.status(201).json({
+  success: true,
+  message: "User registered successfully ✅",
+  token,
+});
+```
+
+} catch (err) {
+return res.status(500).json({
+success: false,
+message: "Registration failed",
+error: err.message,
+});
+}
 };
 
-
-// LOGIN
+// ================= LOGIN =================
 exports.adminlogin = async (req, res) => {
-    try {
-        const { ademail, adpassword } = req.body;
+try {
+const { ademail, adpassword } = req.body;
 
-        const user = await User.findOne({ ademail });
+```
+if (!ademail || !adpassword) {
+  return res.status(400).json({
+    success: false,
+    message: "Email and Password required",
+  });
+}
 
-        if (!user) {
-            return res.status(404).json({
-                message: "User not found ❌"
-            });
-        }
+const user = await User.findOne({ ademail });
 
-        // ✅ compare hashed password
-        const isMatch = await bcrypt.compare(adpassword, user.adpassword);
+if (!user) {
+  return res.status(404).json({
+    success: false,
+    message: "User not found ❌",
+  });
+}
 
-        if (!isMatch) {
-            return res.status(400).json({
-                message: "Wrong password ❌"
-            });
-        }
+// For manually inserted password
+const isMatch = adpassword === user.adpassword;
 
-        const token = jwt.sign(
-            {
-                id: user._id,
-                name: user.adname,
-                email: user.ademail
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: process.env.JWT_EXPIRE }
-        );
+if (!isMatch) {
+  return res.status(400).json({
+    success: false,
+    message: "Wrong password ❌",
+  });
+}
 
-        res.json({
-            message: "Login successful ✅",
-            success: true,
-            token
-        });
+const token = jwt.sign(
+  {
+    id: user._id,
+    name: user.adname,
+    email: user.ademail,
+  },
+  process.env.JWT_SECRET,
+  {
+    expiresIn: process.env.JWT_EXPIRE || "7d",
+  }
+);
 
-    } catch (err) {
-        res.status(500).json({
-            message: "Login failed",
-            success: false,
-            error: err.message
-        });
-    }
+return res.status(200).json({
+  success: true,
+  message: "Login successful ✅",
+  token,
+  user: {
+    id: user._id,
+    adname: user.adname,
+    ademail: user.ademail,
+  },
+});
+```
+
+} catch (err) {
+return res.status(500).json({
+success: false,
+message: "Login failed",
+error: err.message,
+});
+}
 };
