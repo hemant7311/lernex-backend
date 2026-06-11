@@ -3,7 +3,7 @@ const router = express.Router();
 
 const { Sginupuser, loginUser } = require("../controller/signup");
 const { varifytoken } = require("../middleware/middleware");
-const{adminsignup,adminlogin}=require("../controller/adminlogin");  
+const{ adminlogin }=require("../controller/adminlogin");  
 
 const student = require("../model/signup");
 const {googleLogin}= require("../controller/googlelogin"); 
@@ -47,7 +47,6 @@ router.post("/googlelogin", googleLogin);
 router.post("/inquiry", submitInquiry);
 
 // 🔥 Admin routes
-router.post("/adminsignup", adminsignup);
 router.post("/adminlogin", adminlogin);
 // ================= payment gateway route =================
 router.post("/create-payment", varifytoken, createPayment);
