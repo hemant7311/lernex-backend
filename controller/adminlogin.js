@@ -1,8 +1,7 @@
-const User = require('../model/admin');
+const User = require("../model/admin");
 const jwt = require("jsonwebtoken");
 
-
-// SIGNUPexports.adminlogin = async (req, res) => {
+exports.adminlogin = async (req, res) => {
   try {
     const { ademail, adpassword } = req.body;
 
@@ -15,7 +14,6 @@ const jwt = require("jsonwebtoken");
       });
     }
 
-    // Plain text password check
     if (adpassword !== user.adpassword) {
       return res.status(400).json({
         success: false,
@@ -26,8 +24,7 @@ const jwt = require("jsonwebtoken");
     const token = jwt.sign(
       {
         id: user._id,
-        email: user.ademail,
-        name: user.adname
+        email: user.ademail
       },
       process.env.JWT_SECRET || "mysecretkey",
       {
@@ -37,16 +34,15 @@ const jwt = require("jsonwebtoken");
 
     return res.status(200).json({
       success: true,
-      message: "Login successful",
       token
     });
 
   } catch (err) {
-    console.error("ADMIN LOGIN ERROR:", err);
+    console.log(err);
 
     return res.status(500).json({
       success: false,
-      message: "Server Error",
-      error: err.message
+      message: "Server Error"
     });
-  };
+  }
+};
