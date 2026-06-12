@@ -12,12 +12,11 @@ exports.addCategory = async (req, res) => {
       });
     }
 
-    const category = new Category({
-      name,
-      users,
-      image: req.file ? req.file.path : null
-    });
-
+const category = new Category({
+  name,
+  users,
+  image: req.file ? `/uploads/${req.file.filename}` : null
+});
     await category.save();
 
     res.status(201).json({
@@ -52,10 +51,9 @@ exports.updateCategory = async (req, res) => {
     };
 
     // image optional on update
-    if (req.file) {
-      updateData.image = req.file.path;
-    }
-
+  if (req.file) {
+  updateData.image = `/uploads/${req.file.filename}`;
+}
     await Category.findByIdAndUpdate(id, updateData);
 
     res.json({
