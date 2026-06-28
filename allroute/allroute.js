@@ -162,9 +162,14 @@ router.post("/addcard", varifytoken, async (req, res) => {
 // GET USER CART
 router.get("/getcard", varifytoken, async (req, res) => {
   try {
-    const cart = await Cart.find({ user: req.user.id })
-      .populate("course");
+let cart = await Cart.find({
+  user: req.user.id
+}).populate("course");
 
+// null course remove
+cart = cart.filter(item => item.course);
+
+res.json(cart);
     res.json(cart);
   } catch (err) {
     res.status(500).json({ message: "Server error" });

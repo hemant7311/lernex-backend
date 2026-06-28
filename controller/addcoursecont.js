@@ -1,5 +1,5 @@
 const Course = require("../model/addcourse");
-
+const Cart = require("../model/addtocart");
 // =======================
 // CREATE COURSE
 // =======================
@@ -147,7 +147,9 @@ exports.updateCourse = async (req, res) => {
 exports.deleteCourse = async (req, res) => {
   try {
 
-    const course = await Course.findByIdAndDelete(req.params.id);
+    const courseId = req.params.id;
+
+    const course = await Course.findByIdAndDelete(courseId);
 
     if (!course) {
       return res.status(404).json({
@@ -156,12 +158,19 @@ exports.deleteCourse = async (req, res) => {
       });
     }
 
+    // ✅ Cart se bhi delete
+    await Cart.deleteMany({
+      course: courseId
+    });
+
     res.status(200).json({
       success: true,
       message: "Course deleted successfully"
     });
 
   } catch (error) {
+
+    console.error(error);
 
     res.status(500).json({
       success: false,
