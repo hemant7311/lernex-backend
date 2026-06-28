@@ -1,5 +1,4 @@
 const Course = require("../model/addcourse");
-const mongoose = require("mongoose");
 
 // =======================
 // CREATE COURSE
@@ -11,8 +10,6 @@ exports.createCourse = async (req, res) => {
 
     const { title, description, duration, level, price, category } = req.body;
 
-    const image = req.file ? `/uploads/${req.file.filename}` : "";
-
     const course = await Course.create({
       title,
       description,
@@ -20,7 +17,7 @@ exports.createCourse = async (req, res) => {
       level,
       price,
       category,
-      image
+      image: req.file ? req.file.path : null
     });
 
     res.status(201).json({
@@ -28,12 +25,21 @@ exports.createCourse = async (req, res) => {
       message: "Course created successfully",
       data: course
     });
+
   } catch (error) {
     console.error("Create Course Error:", error);
+
     if (error.name === "ValidationError") {
-      return res.status(400).json({ success: false, message: error.message });
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
     }
-    res.status(500).json({ success: false, message: error.message });
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
@@ -49,9 +55,14 @@ exports.getAllCourses = async (req, res) => {
       count: courses.length,
       data: courses
     });
+
   } catch (error) {
-    console.error("Error in getAllCourses:", error);
-    res.status(500).json({ success: false, message: error.message });
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
@@ -69,9 +80,18 @@ exports.getCourseById = async (req, res) => {
       });
     }
 
-    res.status(200).json({ success: true, data: course });
+    res.status(200).json({
+      success: true,
+      data: course
+    });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
   }
 };
 
@@ -80,16 +100,22 @@ exports.getCourseById = async (req, res) => {
 // =======================
 exports.updateCourse = async (req, res) => {
   try {
-    const updateData = { ...req.body };
+
+    const updateData = {
+      ...req.body
+    };
 
     if (req.file) {
-      updateData.image = `/uploads/${req.file.filename}`;
+      updateData.image = req.file.path;
     }
 
     const course = await Course.findByIdAndUpdate(
       req.params.id,
       updateData,
-      { new: true, runValidators: true }
+      {
+        new: true,
+        runValidators: true
+      }
     );
 
     if (!course) {
@@ -104,26 +130,43 @@ exports.updateCourse = async (req, res) => {
       message: "Course updated successfully",
       data: course
     });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
   }
 };
+
+// =======================
+// DELETE COURSE
+// =======================
 exports.deleteCourse = async (req, res) => {
-    try {
-        const course = await Course.findByIdAndDelete(req.params.id);
+  try {
 
-        if (!course) {
-            return res.status(404).json({
-                success: false,
-                message: "Course not found"
-            });
-        }
+    const course = await Course.findByIdAndDelete(req.params.id);
 
-        res.status(200).json({
-            success: true,
-            message: "Course deleted successfully"
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found"
+      });
     }
+
+    res.status(200).json({
+      success: true,
+      message: "Course deleted successfully"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
+  }
 };

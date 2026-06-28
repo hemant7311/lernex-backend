@@ -12,17 +12,20 @@ exports.addCategory = async (req, res) => {
       });
     }
 
-const category = new Category({
-  name,
-  users,
-  image: req.file ? `/uploads/${req.file.filename}` : null
-});
+    const category = new Category({
+      name,
+      users,
+      image: req.file ? req.file.path : null
+    });
+
     await category.save();
 
     res.status(201).json({
       success: true,
-      message: "Category added successfully"
+      message: "Category added successfully",
+      category
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({
@@ -50,16 +53,17 @@ exports.updateCategory = async (req, res) => {
       users
     };
 
-    // image optional on update
-  if (req.file) {
-  updateData.image = `/uploads/${req.file.filename}`;
-}
-    await Category.findByIdAndUpdate(id, updateData);
+    if (req.file) {
+      updateData.image = req.file.path;
+    }
+
+    await Category.findByIdAndUpdate(id, updateData, { new: true });
 
     res.json({
       success: true,
       message: "Category updated successfully"
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({
@@ -72,14 +76,13 @@ exports.updateCategory = async (req, res) => {
 // ================= DELETE CATEGORY =================
 exports.deleteCategory = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    await Category.findByIdAndDelete(id);
+    await Category.findByIdAndDelete(req.params.id);
 
     res.json({
       success: true,
       message: "Category deleted successfully"
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({
